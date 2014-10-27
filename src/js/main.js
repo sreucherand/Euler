@@ -4,7 +4,6 @@ $(document).ready(init);
 
 function init(){
     webgl = new Webgl(window.innerWidth, window.innerHeight);
-    $('.three').append(webgl.renderer.domElement);
 
     gui = new dat.GUI();
     gui.close();

@@ -6,35 +6,32 @@ var Webgl = (function(){
         
         this.camera = new THREE.PerspectiveCamera(50, width / height, 1, 10000);
         this.camera.position.z = 500;
+        
+        this.light = new THREE.PointLight(0xffffff);
+        this.light.position.set(50, 100, 0);
+        this.scene.add(this.light);
 
         this.renderer = new THREE.WebGLRenderer();
         this.renderer.setSize(width, height);
         this.renderer.setClearColor(0x2D2D2D);
-
-        // Directly add objects
-        this.someObject = new THREE.Mesh(new THREE.BoxGeometry(50, 50, 50), new THREE.MeshBasicMaterial({color: 0xFF0000, wireframe: true}));
-        this.someObject.position.set(-60, 0, 0);
-        this.scene.add(this.someObject);
-
-        // Or create container classes for them to simplify your code
-        this.someOtherObject = new Sphere();
-        this.someOtherObject.position.set(60, 0, 0);
-        this.scene.add(this.someOtherObject);
+        
+        $('.three').append(this.renderer.domElement);
+        
+        this.map = new Map();
+        this.scene.add(this.map);
+        
+        this.tbc = new THREE.TrackballControls(this.camera, this.renderer.domElement);
     }
-
+    
     Webgl.prototype.resize = function(width, height) {
         this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(width, height);
     };
 
-    Webgl.prototype.render = function() {    
+    Webgl.prototype.render = function() {
         this.renderer.render(this.scene, this.camera);
-
-        this.someObject.rotation.y += 0.01;
-        this.someObject.rotation.x += 0.01;
-
-        this.someOtherObject.update();
+        this.tbc.update();
     };
 
     return Webgl;
