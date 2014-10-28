@@ -16,6 +16,7 @@
     "dat-gui": "~0.5.0"
   },
   "dependencies": {
-    "nprogress": "~0.1.6"
+    "nprogress": "~0.1.6",
+    "underscore": "~1.7.0"
   }
 }

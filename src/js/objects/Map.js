@@ -8,11 +8,9 @@ var Map = (function(){
         var resolution = 10;
         
         var geometry = new THREE.PlaneGeometry(width, height, width / resolution, height / resolution);
-        var material = new THREE.MeshBasicMaterial({color: 0x555555, wireframe: true});
-        // MeshFaceMatrerial
+        var material = new THREE.MeshFaceMaterial([new THREE.MeshPhongMaterial({emissive: 0x222222, wireframe: true, shininess: 100}), new THREE.MeshNormalMaterial({transparent: true, opacity: 0})])
         
         this.mesh = new THREE.Mesh(geometry, material);
-        this.mesh.rotation.x = -Math.PI / 3;
         
         var bumpMapDeferred = new $.Deferred();
         var specularMapDeferred = new $.Deferred();
@@ -46,6 +44,9 @@ var Map = (function(){
             var column = 0;
             var line = 0;
             
+            this.vertices = [];
+            this.faces = [];
+            
             for (var i=0; i < this.mesh.geometry.vertices.length; i++) {
                 vertice = this.mesh.geometry.vertices[i];
                 
@@ -61,14 +62,18 @@ var Map = (function(){
                 
                 specular = color.l;
                 
-                if (specular < 0.5 && Math.abs(vertice.x) !== width/2 && Math.abs(vertice.y) !== height/2) {
-                    vertice.z += altitude * 50;
+                if (Math.abs(vertice.x) !== width/2 && Math.abs(vertice.y) !== height/2) {
                     vertice.x += Math.random() * 10;
                     vertice.y += Math.random() * 10;
-                } else {
-                    vertice.z = 0;
+                    
+                    if (specular < 0.5) {
+                        vertice.z += altitude * 50;
+                        
+                        this.vertices.push(i);
+                    } else {
+                        vertice.z = 0;
+                    }
                 }
-                
                 if (++column === (width / resolution) + 1) {
                     column = 0;
                     line++;
@@ -77,12 +82,17 @@ var Map = (function(){
             
             this.mesh.geometry.verticesNeedUpdate = true;
             
-            this.mesh.geometry.normalsNeedUpdate = true;
             for (var i=0; i < this.mesh.geometry.faces.length; i++) {
-                console.log(this.mesh.geometry.faces[i]);
+                face = this.mesh.geometry.faces[i];
+                
+                if (!_.contains(this.vertices, face.a) && !_.contains(this.vertices, face.b) && !_.contains(this.vertices, face.c)) {
+                    face.materialIndex = 1;
+                    
+                    this.faces.push(face);
+                }
             }
-            this.add(this.mesh);
             
+            this.add(this.mesh);
         }.bind(this));
     }
 
