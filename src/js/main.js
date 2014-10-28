@@ -9,7 +9,7 @@ function init(){
     gui.close();
 
     $(window).on('resize', resizeHandler);
-
+    
     animate();
 }
 
