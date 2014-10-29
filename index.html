@@ -3,16 +3,51 @@
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>Awesome Experiment</title>
+    
+    <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Libre+Baskerville:400,700,400italic">
 	<link rel="stylesheet" href="styles/styles.css">
 </head>
-<body>	
+<body>
+    <div class="intro">
+        <div class="block">Loading</div>
+        <div class="block">Loading</div>
+    </div>
     <div class="three"></div>
+    
+    <script type="x-shader/x-vertex" id="vertexshader">
+        attribute float size;
+        attribute float opacity;
+        
+        varying float vOpacity;
+        
+        void main() {
+            vOpacity = opacity;
+            
+            vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+            
+            gl_PointSize = size * (300.0 / length(mvPosition.xyz));
+            gl_Position = projectionMatrix * mvPosition;
+        }
+    </script>
+
+    <script type="x-shader/x-fragment" id="fragmentshader">
+        uniform vec3 color;
+        uniform sampler2D texture;
+        
+        varying float vOpacity;
+        
+        void main () {
+            gl_FragColor = vec4(color, vOpacity);
+            gl_FragColor = gl_FragColor * texture2D(texture, gl_PointCoord);
+        }
+    </script>
+    
     <script src="assets/lib/dat-gui/build/dat.gui.min.js"></script>
 	<script src="assets/lib/jquery/dist/jquery.min.js"></script>
 	<script src="assets/lib/underscore/underscore.js"></script>
     <script src="assets/lib/greensock/src/minified/TweenMax.min.js"></script>
 	<script src="assets/lib/threejs/build/three.min.js"></script>
-
+    
     <script src="build/vendors.js"></script>
     <script src="build/app.min.js"></script>
 </body>
