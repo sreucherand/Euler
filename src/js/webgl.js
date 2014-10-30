@@ -17,9 +17,10 @@ var Webgl = (function(){
         this.map.init(function () {
             promise.resolve();
         });
+        this.map.camera = this.camera;
         
-        this.light = new THREE.PointLight(0x333333, 1, 300);
-        this.light.position.z = 500;
+        this.light = new THREE.PointLight(0xffffff, 1.5, 300);
+        this.light.position.z = 600;
         
         this.container = new THREE.Object3D();
         
@@ -34,16 +35,13 @@ var Webgl = (function(){
         
         $('.three').append(this.renderer.domElement);
         
-        this.trackball = new THREE.TrackballControls(this.camera, this.renderer.domElement);
-        
-        //TweenMax.to(this.camera.position, 1.5, {z: 600, ease:Expo.easeOut});
-        //TweenMax.to(this.container.rotation, 1.5, {x: -Math.PI / 5, ease:Expo.easeOut});
+//        this.trackball = new THREE.TrackballControls(this.camera, this.renderer.domElement);
         
         var vignetteShader = THREE.VignetteShader;
         var vignettePass = new THREE.ShaderPass(vignetteShader);
         
         vignettePass.uniforms['offset'].value = 0.5;
-        vignettePass.uniforms['darkness'].value = 1.5;
+        vignettePass.uniforms['darkness'].value = 2;
         vignettePass.renderToScreen = true;
         
         var renderPass = new THREE.RenderPass(this.scene, this.camera);
@@ -78,7 +76,7 @@ var Webgl = (function(){
             intersection.x = intersects[0].point.x;
             intersection.y = intersects[0].point.y;
             
-            this.map.handlePins(intersection);
+            this.projection(mouse);
             
             return;
         }
@@ -99,9 +97,18 @@ var Webgl = (function(){
         }
     };
     
+    Webgl.prototype.projection = function (mouse) {
+        if (this.destination) {
+            this.destination.y = mouse.x * -Math.PI/20;
+        }
+    };
+    
     Webgl.prototype.intro = function () {
         TweenMax.to(this.container.rotation, 2, {x: -Math.PI/5, ease:Expo.easeInOut});
-        TweenMax.to(this.camera.position, 2, {z: 600, ease:Expo.easeInOut});
+        TweenMax.to(this.camera.position, 2, {z: 600, ease:Expo.easeInOut, onComplete: function () {
+            this.started = true;
+            $('body').addClass('search');
+        }.bind(this)});
     };
     
     Webgl.prototype.resize = function(width, height) {
@@ -113,10 +120,20 @@ var Webgl = (function(){
 
     Webgl.prototype.render = function(frame) {
         this.renderer.render(this.scene, this.camera);
-        this.trackball.update();
-        this.light.position.lerp(point, 0.075);
-        this.map.update(frame);
         this.composer.render();
+        this.map.update(frame);
+        
+        if (this.started && !this.destination) {
+            this.destination = this.camera.rotation.clone();
+        }
+        if (this.destination && !this.map.zoom) {
+            var vec = new THREE.Vector3(this.camera.rotation.x, this.camera.rotation.y, this.camera.rotation.z);
+            
+            vec.lerp(this.destination, 0.075);
+            
+            this.camera.rotation.y = vec.y;
+        }
+        this.light.position.lerp(point, 0.075);
     };
     
     Webgl.prototype.on = function (name, fn) {

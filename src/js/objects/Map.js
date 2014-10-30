@@ -2,7 +2,7 @@ var Map = (function(){
     
     var API_KEY = 'AIzaSyCURimnNCqfo0xFdpvx-gh2KmsyIxTZa0A';
     var particleSize = 5;
-    var orange = 0xcfd400;
+    var lightgrey = 0xdddddd;
     
     function Map(){
         THREE.Object3D.call(this);
@@ -13,6 +13,7 @@ var Map = (function(){
         this.vertices = [];
         this.faces = [];
         this.pins = [];
+        this.zoom = false;
     }
 
     Map.prototype = new THREE.Object3D;
@@ -21,8 +22,14 @@ var Map = (function(){
     Map.prototype.init = function (callback) {
         var resolution = 10;
         
+        var colors = [];
+        
+        colors.push(new THREE.Color(0.05, 0.05, 0.05));
+        colors.push(new THREE.Color(0.075, 0.075, 0.075));
+        colors.push(new THREE.Color(0.1, 0.1, 0.1));
+        
         var geometry = new THREE.PlaneGeometry(this.width, this.height, this.width / resolution, this.height / resolution);
-        var material = new THREE.MeshFaceMaterial([new THREE.MeshPhongMaterial({emissive: 0x222222, wireframe: true, shininess: 100}), new THREE.MeshNormalMaterial({transparent: true, opacity: 0}), new THREE.MeshLambertMaterial({color: 'black', wireframe: false})])
+        var material = new THREE.MeshFaceMaterial([new THREE.MeshPhongMaterial({color: 0x222222, wireframe: true}), new THREE.MeshBasicMaterial({transparent: true, opacity: 0})])
         
         this.mesh = new THREE.Mesh(geometry, material);
         
@@ -60,6 +67,7 @@ var Map = (function(){
             
             for (var i=0; i < this.mesh.geometry.vertices.length; i++) {
                 vertice = this.mesh.geometry.vertices[i];
+                cvertice = this.mesh.geometry.vertices[i];
                 
                 data = bumpMap.getImageData(column * resolution, line * resolution, 1, 1).data;
                 color = new THREE.Color(data[0]/255, data[1]/255, data[2]/255);
@@ -93,13 +101,23 @@ var Map = (function(){
             
             this.mesh.geometry.verticesNeedUpdate = true;
             
+            material = new THREE.MeshFaceMaterial([new THREE.MeshPhongMaterial({color: colors[0], shininess: 20}), new THREE.MeshPhongMaterial({color: colors[1], shininess: 20}), new THREE.MeshPhongMaterial({color: colors[2], shininess: 20}), new THREE.MeshBasicMaterial({transparent: true, opacity: 0})]);
+        
+            var clone = new THREE.Mesh(this.mesh.geometry.clone(), material);
+            
+            clone.position.z -= 1;
+            
             for (var i=0; i < this.mesh.geometry.faces.length; i++) {
                 face = this.mesh.geometry.faces[i];
+                cface = clone.geometry.faces[i];
                 
                 if (!_.contains(this.vertices, face.a) && !_.contains(this.vertices, face.b) && !_.contains(this.vertices, face.c)) {
                     face.materialIndex = 1;
-                } else {
+                    cface.materialIndex = 3;
+                    
                     this.faces.push(face);
+                } else {
+                    cface.materialIndex = Math.floor(Math.random()*3);
                 }
             }
             
@@ -132,6 +150,8 @@ var Map = (function(){
                 this.pointCloud.geometry.vertices.push(this.mesh.geometry.vertices[this.vertices[i]].clone());
             }
             
+            this.add(clone);
+            
             this.add(this.mesh);
             this.add(this.pointCloud);
             
@@ -142,6 +162,12 @@ var Map = (function(){
     };
     
     Map.prototype.pin = function (centroid) {
+        if (this.zoom) {
+            this.dezoom();
+            return;
+        }
+        this.zoom = true;
+        
         var tolerance = 150;
         var latitude = centroid.y*180 / (this.height-tolerance);
         var longitude = centroid.x*360 / (this.width);
@@ -151,23 +177,23 @@ var Map = (function(){
             if (data.results.length) {
                 var fontSize = 5;
                 
-                var shapes = THREE.FontUtils.generateShapes(removeAccents(data.results[0].formatted_address), {size: fontSize});
-                var material = new THREE.LineBasicMaterial({color: orange, transparent: true, opacity: 1});
+                var shapes = THREE.FontUtils.generateShapes(data.results[0].formatted_address, {font: 'lora', size: fontSize});
+                var material = new THREE.LineBasicMaterial({color: lightgrey, transparent: true, opacity: 1});
                 var geometry = new THREE.Geometry();
 
                 var line = new THREE.Line(geometry, material);
                 
-                line.geometry.vertices.push(new THREE.Vector3(centroid.x, centroid.y, centroid.z+75));
-                line.geometry.vertices.push(new THREE.Vector3(centroid.x, centroid.y, centroid.z+75));
+                line.geometry.vertices.push(new THREE.Vector3(centroid.x, centroid.y, centroid.z+35));
+                line.geometry.vertices.push(new THREE.Vector3(centroid.x, centroid.y, centroid.z+35));
                 
                 geometry = new THREE.ShapeGeometry(shapes);
-                material = new THREE.MeshBasicMaterial({color: orange, transparent: true, opacity: 0});
+                material = new THREE.MeshBasicMaterial({color: lightgrey, transparent: true, opacity: 0});
                 
                 var text = new THREE.Mesh(geometry, material);
                 
                 text.position.x = centroid.x + 5;
                 text.position.y = centroid.y;
-                text.position.z = centroid.z + 75 - fontSize;
+                text.position.z = centroid.z + 35 - fontSize;
                 text.rotation.x = Math.PI / 2;
                 
                 this.add(line);
@@ -177,9 +203,12 @@ var Map = (function(){
                     line.geometry.verticesNeedUpdate = true;
                     text.material.needUpdate = true;
                 }});
-
-                timeline.to(line.geometry.vertices[1], 0.5, {z: centroid.z, ease:Expo.easeInOut});
-                timeline.to(text.material, 0.5, {opacity: 1, ease:Expo.easeOut}, 0.25);
+                
+                $('body').attr('class', 'close');
+                
+                timeline.to(this.camera.position, 2, {x: centroid.x, y: centroid.y, z: 250, ease:Expo.easeOut});
+                timeline.to(line.geometry.vertices[1], 0.5, {z: centroid.z, ease:Expo.easeInOut}, 1);
+                timeline.to(text.material, 0.5, {opacity: 1, ease:Expo.easeOut}, '-=0.4');
                 timeline.play();
 
                 this.pins.push({
@@ -188,19 +217,30 @@ var Map = (function(){
                     text: text,
                     birth: new Date()
                 });
+            } else {
+                this.zoom = false;
             }
+        }.bind(this)).error(function() {
+            this.zoom = false;
         }.bind(this));
     };
     
-    Map.prototype.handlePins = function (intersection) {
+    Map.prototype.dezoom = function (intersection) {
+        if (!this.zoom) {
+            return;
+        }
+        
         for (var i=0; i<this.pins.length; i++) {
             pin = this.pins[i];
             
-            if (new Date() > new Date(pin.birth.getTime() + 1500) && pin.origin.distanceTo(intersection) > 100) {
-                TweenMax.to(pin.line.material, 0.75, {opacity: 0, ease:Expo.easeOut});
-                TweenMax.to(pin.text.material, 0.75, {opacity: 0, ease:Expo.easeOut});
-            }
+            TweenMax.to(pin.line.material, 0.75, {opacity: 0, ease:Expo.easeOut});
+            TweenMax.to(pin.text.material, 0.75, {opacity: 0, ease:Expo.easeOut});
         }
+        TweenMax.to(this.camera.position, 1.5, {x: 0, y: 0, z: 600, ease:Expo.easeOut});
+        
+        $('body').attr('class', 'search');
+        
+        this.zoom = false;
     };
     
     Map.prototype.update = function (frame) {

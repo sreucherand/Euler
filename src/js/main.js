@@ -17,6 +17,8 @@ function init(){
     }});
         
     webgl.on('load', function () {
+        $('#loop')[0].play();
+        
         TweenMax.to($('.intro .background'), 2, {opacity: 0, delay: 2.5});
         
         timeline.to($('.intro .loading'), 0.75, {opacity: 0, y: -25, ease:Expo.easeOut, force3D: true});
@@ -50,22 +52,4 @@ function resizeHandler() {
 function animate() {
     requestAnimationFrame(animate);
     webgl.render(frame++);
-}
-
-function removeAccents(string) {
-    var string = string.split('');
-    var stringOut = new Array();
-    var accents = 'ÀÁÂÃÄÅàáâãäåÒÓÔÕÕÖØòóôõöøÈÉÊËèéêëðÇçÐÌÍÎÏìíîïÙÚÛÜùúûüÑñŠšŸÿýŽž';
-    var accentsOut = "AAAAAAaaaaaaOOOOOOOooooooEEEEeeeeeCcDIIIIiiiiUUUUuuuuNnSsYyyZz";
-    
-    for (var y = 0; y < string.length; y++) {
-        if (accents.indexOf(string[y]) != -1) {
-            stringOut[y] = accentsOut.substr(accents.indexOf(string[y]), 1);
-        } else {
-            stringOut[y] = string[y];
-        }
-    }
-    stringOut = stringOut.join('');
-    
-    return stringOut;
 }
