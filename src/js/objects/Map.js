@@ -7,17 +7,22 @@ var Map = (function(){
     function Map(){
         THREE.Object3D.call(this);
         
-        var resolution = 10;
-        
         this.width = 1000;
         this.height = 500;
         
         this.vertices = [];
         this.faces = [];
         this.pins = [];
+    }
+
+    Map.prototype = new THREE.Object3D;
+    Map.prototype.constructor = Map;
+    
+    Map.prototype.init = function (callback) {
+        var resolution = 10;
         
         var geometry = new THREE.PlaneGeometry(this.width, this.height, this.width / resolution, this.height / resolution);
-        var material = new THREE.MeshFaceMaterial([new THREE.MeshPhongMaterial({emissive: 0x222222, wireframe: true, shininess: 100}), new THREE.MeshNormalMaterial({transparent: true, opacity: 0})])
+        var material = new THREE.MeshFaceMaterial([new THREE.MeshPhongMaterial({emissive: 0x222222, wireframe: true, shininess: 100}), new THREE.MeshNormalMaterial({transparent: true, opacity: 0}), new THREE.MeshLambertMaterial({color: 'black', wireframe: false})])
         
         this.mesh = new THREE.Mesh(geometry, material);
         
@@ -93,16 +98,15 @@ var Map = (function(){
                 
                 if (!_.contains(this.vertices, face.a) && !_.contains(this.vertices, face.b) && !_.contains(this.vertices, face.c)) {
                     face.materialIndex = 1;
-                    
+                } else {
                     this.faces.push(face);
                 }
             }
             
             var attributes = {
-				size: {type: 'f', value: []},
-				opacity: {type: 'f', value: []}
+                size: {type: 'f', value: []},
+                opacity: {type: 'f', value: []}
 			};
-
 			var uniforms = {
                 amplitude: {type: "f", value: 1.0},
 				color: {type: "c", value: new THREE.Color(0xffffff)},
@@ -122,19 +126,20 @@ var Map = (function(){
             this.pointCloud = new THREE.PointCloud(new THREE.Geometry(), shaderMaterial);
             
             for (var i=0; i<this.vertices.length; i++) {
-                attributes.size.value.push(Math.random()*5+2);
-                attributes.opacity.value.push(Math.random());
+                attributes.size.value.push(0);
+                attributes.opacity.value.push(0);
                 
                 this.pointCloud.geometry.vertices.push(this.mesh.geometry.vertices[this.vertices[i]].clone());
             }
             
             this.add(this.mesh);
             this.add(this.pointCloud);
+            
+            if (typeof callback === 'function') {
+                callback();
+            }
         }.bind(this));
-    }
-
-    Map.prototype = new THREE.Object3D;
-    Map.prototype.constructor = Map;
+    };
     
     Map.prototype.pin = function (centroid) {
         var tolerance = 150;

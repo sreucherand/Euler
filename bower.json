@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "nprogress": "~0.1.6",
-    "underscore": "~1.7.0"
+    "underscore": "~1.7.0",
+    "normalize-css": "~3.0.2"
   }
 }

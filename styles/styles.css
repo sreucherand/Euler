@@ -1,26 +1,100 @@
-body, html {
+body,
+html {
     width: 100%;
     height: 100%;
     margin: 0;
     padding: 0;
+    font-family: 'Century', serif;
+    line-height: 1;
+    color: #dddddd;
     overflow: hidden;
+    background-color: #222222;
+    
+    -webkit-font-smoothing: antialiased;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+h1 {
+    font-size: inherit;
+    font-weight: inherit;
+    margin: 0;
+    margin-bottom: 20px;
+}
+p {
+    margin: 0;
+}
+input,
+button {
+    font-family: inherit;
+    
+    -webkit-appearance: none;
+}
+input:focus,
+button:focus {
+    outline: none;
 }
 
 .intro {
     position: fixed;
-    display: table;
     z-index: 10;
-    top: 0; left: 0;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    background-color: #333333;
 }
-.intro .loading {
+.intro .background {
+    position: absolute;
+    z-index: -1;
+    width: inherit;
+    height: inherit;
+    
+    background: rgb(34, 34, 34);
+    background: -moz-radial-gradient(center, ellipse cover, rgba(34, 34, 34, 1) 0%, rgba(34, 34, 34, 1) 40%, rgba(17, 17, 17, 1) 100%);
+    background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(0%, rgba(34, 34, 34, 1)), color-stop(40%, rgba(34, 34, 34, 1)), color-stop(100%, rgba(17, 17, 17, 1)));
+    background: -webkit-radial-gradient(center, ellipse cover, rgba(34, 34, 34, 1) 0%, rgba(34, 34, 34, 1) 40%, rgba(17, 17, 17, 1) 100%);
+    background: radial-gradient(ellipse at center, rgba(34, 34, 34, 1) 0%, rgba(34, 34, 34, 1) 40%, rgba(17, 17, 17, 1) 100%);
+}
+.intro .block {
+    position: absolute;
+    display: table;
+    width: inherit;
+    height: inherit;
+}
+.intro .block .content {
     display: table-cell;
     vertical-align: middle;
-    font-family: 'Libre Baskerville', serif;
-    font-style: italic;
-    font-size: 92px;
+    font-family: 'Century', serif;
+    font-size: 62px;
     text-align: center;
-    color: #555555;
+}
+.intro .block .content .small {
+    font-size: 24px;
+}
+.intro .home .content h1 {
+    opacity: 0;
+    
+    -webkit-transform: translateY(25px);
+    transform: translateY(25px);
+}
+.intro .home .content p {
+    opacity: 0;
+    margin-bottom: 40px;
+}
+.intro .home .content button {
+    opacity: 0;
+    padding: 12px 20px;
+    background: transparent;
+    border: 1px solid #9a9a9a;
+    font-size: 16px;
+    border-radius: 3px;
+    
+    -webkit-transition: all 500ms cubic-bezier(0.19, 1, 0.22, 1);
+    transition: all 750ms cubic-bezier(0.19, 1, 0.22, 1);
+}
+.intro .home .content button:hover {
+    color: #ffffff;
+    border-color: #ffffff;
 }

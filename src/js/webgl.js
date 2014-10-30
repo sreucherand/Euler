@@ -1,23 +1,33 @@
 var Webgl = (function(){
     
+    var events = {};
     var point = new THREE.Vector3(0, 0, 100);
     
     function Webgl(width, height){
+        var scope = this;
+        
         // Basic three.js setup
         this.scene = new THREE.Scene();
+        
         this.camera = new THREE.PerspectiveCamera(50, width / height, 1, 10000);
-        this.light = new THREE.PointLight(0x333333, 1, 300);
-        this.container = new THREE.Object3D();
-        this.renderer = new THREE.WebGLRenderer();
-        
-        //this.map = new Map();
-        
         this.camera.position.z = 100;
         
+        var promise = $.Deferred();
+        this.map = new Map();
+        this.map.init(function () {
+            promise.resolve();
+        });
+        
+        this.light = new THREE.PointLight(0x333333, 1, 300);
+        this.light.position.z = 500;
+        
+        this.container = new THREE.Object3D();
+        
+        this.renderer = new THREE.WebGLRenderer();
         this.renderer.setSize(width, height);
         this.renderer.setClearColor(0x222222);
-        this.light.position.z = 500;
-        //this.container.add(this.map);
+        
+        this.container.add(this.map);
         this.container.add(this.light);
         
         this.scene.add(this.container);
@@ -26,9 +36,26 @@ var Webgl = (function(){
         
         this.trackball = new THREE.TrackballControls(this.camera, this.renderer.domElement);
         
+        //TweenMax.to(this.camera.position, 1.5, {z: 600, ease:Expo.easeOut});
+        //TweenMax.to(this.container.rotation, 1.5, {x: -Math.PI / 5, ease:Expo.easeOut});
         
-        TweenMax.to(this.camera.position, 1.5, {z: 600, ease:Expo.easeOut});
-        TweenMax.to(this.container.rotation, 1.5, {x: -Math.PI / 5, ease:Expo.easeOut});
+        var vignetteShader = THREE.VignetteShader;
+        var vignettePass = new THREE.ShaderPass(vignetteShader);
+        
+        vignettePass.uniforms['offset'].value = 0.5;
+        vignettePass.uniforms['darkness'].value = 1.5;
+        vignettePass.renderToScreen = true;
+        
+        var renderPass = new THREE.RenderPass(this.scene, this.camera);
+        
+        this.composer = new THREE.EffectComposer(this.renderer, new THREE.WebGLRenderTarget(width, height, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBuffer: true }));
+        this.composer.setSize(width, height);
+        this.composer.addPass(renderPass);
+        this.composer.addPass(vignettePass);
+        
+        $.when(promise).done(function () {
+            this.call('load');
+        }.bind(this));
     }
     
     Webgl.prototype.mouseHandler = function (evt, mouse) {
@@ -72,10 +99,16 @@ var Webgl = (function(){
         }
     };
     
+    Webgl.prototype.intro = function () {
+        TweenMax.to(this.container.rotation, 2, {x: -Math.PI/5, ease:Expo.easeInOut});
+        TweenMax.to(this.camera.position, 2, {z: 600, ease:Expo.easeInOut});
+    };
+    
     Webgl.prototype.resize = function(width, height) {
         this.camera.aspect = width / height;
         this.camera.updateProjectionMatrix();
         this.renderer.setSize(width, height);
+        this.composer.setSize(width, height);
     };
 
     Webgl.prototype.render = function(frame) {
@@ -83,6 +116,26 @@ var Webgl = (function(){
         this.trackball.update();
         this.light.position.lerp(point, 0.075);
         this.map.update(frame);
+        this.composer.render();
+    };
+    
+    Webgl.prototype.on = function (name, fn) {
+        if (!events[name]) {
+            events[name] = [];
+        }
+        if (typeof fn === 'function') {
+            events[name].push(fn);
+        }
+    };
+    
+    Webgl.prototype.call = function (name) {
+        if (!events[name]) {
+            return;
+        }
+        
+        for(var i=0; i<events[name].length; i++) {
+            events[name][i]();
+        }
     };
 
     return Webgl;
