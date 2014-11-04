@@ -104,23 +104,3 @@ body.close {
     color: #ffffff;
     border-color: #ffffff;
 }
-
-.socials .twitter {
-    position: fixed;
-    z-index: 20;
-    left: 20px;
-    bottom: 20px;
-    display: block;
-    width: 40px;
-    height: 40px;
-    overflow: hidden;
-    text-indent: -9999px;
-    background: transparent url('../public/img/twitter.png') no-repeat center center;
-    opacity: 0.5;
-    
-    -webkit-transition: opacity 750ms cubic-bezier(0.19, 1, 0.22, 1);
-    transition: opacity 750ms cubic-bezier(0.19, 1, 0.22, 1);
-}
-.socials .twitter:hover {
-    opacity: 1;
-}

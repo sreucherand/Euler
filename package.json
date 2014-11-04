@@ -1,7 +1,7 @@
 {
-  "name": "workshop-threejs-starter",
-  "version": "0.0.1",
-  "description": "THREE.js Starter Kit for Creative Coding Workshop for CRMA 2015",
+  "name": "Euler",
+  "version": "1.0.0",
+  "description": "Euler is a three.js experiment made in 3 days as part as a workshop, at Gobelins, l'école de l'image.",
   "main": "src/js/main.js",
   "dependencies": {
   },
@@ -12,6 +12,6 @@
     "gulp-uglify": "~1.0.1",
     "gulp-watch": "^1.1.0"
   },
-  "author": "Guillaume Gouessan",
-  "license": "BSD-2-Clause"
+  "author": "Euler",
+  "license": "MIT"
 }

@@ -1,17 +1,8 @@
-threejs-starter-kit
-===================
+# Euler
 
-Three.js starter kit made for Three.js Workshop.  
-It uses Three.js, Greensock and Jquery as depencies.  
-I also added a few Three.js extra classes from the examples for post-processing.  
+Euler is a three.js experiment made in 3 days as part as a workshop, at Gobelins, l'école de l'image.
 
-After cloning install all node dependencies :  
-`npm i`
+## Contact
 
-Then install the libraries :  
-`bower install`
-
-Then launch gulp to build :  
-`gulp`
-
-You are good to go !
+- [Twitter](http://twitter.com/sreucherand)
+- [LinkedIn](http://fr.linkedin.com/in/sylvainreucherand)
