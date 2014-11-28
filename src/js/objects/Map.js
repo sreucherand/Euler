@@ -162,8 +162,10 @@ var Map = (function(){
     };
     
     Map.prototype.pin = function (centroid) {
-        if (this.zoom) {
+        if (this.zoom && this.transition) {
             this.dezoom();
+            return;
+        } else if (this.zoom) {
             return;
         }
         this.zoom = true;
@@ -209,6 +211,9 @@ var Map = (function(){
                 timeline.to(this.camera.position, 2, {x: centroid.x, y: centroid.y, z: 250, ease:Expo.easeOut});
                 timeline.to(line.geometry.vertices[1], 0.5, {z: centroid.z, ease:Expo.easeInOut}, 1);
                 timeline.to(text.material, 0.5, {opacity: 1, ease:Expo.easeOut}, '-=0.4');
+                timeline.addCallback(function () {
+                    this.transition = true;
+                }.bind(this));
                 timeline.play();
 
                 this.pins.push({
@@ -236,11 +241,12 @@ var Map = (function(){
             TweenMax.to(pin.line.material, 0.75, {opacity: 0, ease:Expo.easeOut});
             TweenMax.to(pin.text.material, 0.75, {opacity: 0, ease:Expo.easeOut});
         }
-        TweenMax.to(this.camera.position, 1.5, {x: 0, y: 0, z: 600, ease:Expo.easeOut});
+        TweenMax.to(this.camera.position, 1.5, {x: 0, y: 0, z: 600, ease:Expo.easeOut, onComplete: function () {
+            this.transition = false;
+            this.zoom = false;
+        }.bind(this)});
         
         $('body').attr('class', 'search');
-        
-        this.zoom = false;
     };
     
     Map.prototype.update = function (frame) {

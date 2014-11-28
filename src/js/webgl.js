@@ -35,8 +35,6 @@ var Webgl = (function(){
         
         $('.three').append(this.renderer.domElement);
         
-//        this.trackball = new THREE.TrackballControls(this.camera, this.renderer.domElement);
-        
         var vignetteShader = THREE.VignetteShader;
         var vignettePass = new THREE.ShaderPass(vignetteShader);
         
@@ -57,6 +55,10 @@ var Webgl = (function(){
     }
     
     Webgl.prototype.mouseHandler = function (evt, mouse) {
+        if (!this.started) {
+            return;
+        }
+        
         var raycaster = new THREE.Raycaster();
         var vector = new THREE.Vector3(mouse.x, mouse.y, 1).unproject(this.camera);
 
